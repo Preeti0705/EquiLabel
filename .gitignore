@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+*.egg-info/
+
+# Flutter
+frontend/build/
+frontend/.dart_tool/
+frontend/.flutter-plugins
+frontend/.packages
+
+# GCP
+*.key.json
+.terraform/
+terraform.tfstate*
+
+# Data
+*.csv
+*.parquet
+!demo-data/.gitkeep
