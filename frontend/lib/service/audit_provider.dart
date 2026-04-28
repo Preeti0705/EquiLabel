@@ -40,7 +40,9 @@ class AuditProvider with ChangeNotifier {
         }
 
         try {
-          String currentStatus = await _apiService.getStatus(_auditId!);
+          Map<String, dynamic> data = await _apiService.getStatus(_auditId!);
+          String currentStatus = data['status'];
+          
           if (currentStatus == 'complete') {
             _report = await _apiService.getReport(_auditId!);
             _status = AuditStatus.complete;
@@ -48,7 +50,7 @@ class AuditProvider with ChangeNotifier {
             timer.cancel();
           } else if (currentStatus == 'failed') {
             _status = AuditStatus.failed;
-            _errorMessage = 'Audit processing failed on server.';
+            _errorMessage = data['error'] ?? 'Audit processing failed on server.';
             notifyListeners();
             timer.cancel();
           }

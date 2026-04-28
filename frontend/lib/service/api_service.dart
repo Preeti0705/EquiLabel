@@ -33,11 +33,10 @@ class ApiService {
     }
   }
 
-  Future<String> getStatus(String auditId) async {
+  Future<Map<String, dynamic>> getStatus(String auditId) async {
     var response = await http.get(Uri.parse('$baseUrl/audit/$auditId/status'));
     if (response.statusCode == 200) {
-      var data = jsonDecode(response.body);
-      return data['status'];
+      return jsonDecode(response.body);
     } else {
       throw Exception('Failed to get status');
     }

@@ -1,12 +1,3 @@
-"""
-gcp_services.py
-Drop this into backend/ml-audit/ to replace your mock services.
-Wires EquiLabel to real BigQuery, Vertex AI, Gemini, and Cloud Storage.
-"""
-from asyncio import base_events
-from asyncio import base_events
-from asyncio import base_events
-from asyncio import base_events
 import os
 import json
 import uuid
@@ -34,7 +25,7 @@ aiplatform.init(project=PROJECT_ID, location=LOCATION)
 
 # Gemini model
 gemini_model = GenerativeModel(
-    "gemini-2.5-flash",
+    "gemini-1.5-flash",
 )
 
 
