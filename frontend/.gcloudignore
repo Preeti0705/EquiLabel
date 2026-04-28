@@ -1,0 +1,15 @@
+# Include everything by default
+!**
+
+# Except for these
+.git
+.dart_tool/
+.pub/
+.pub-cache/
+build/
+android/
+ios/
+linux/
+macos/
+windows/
+test/
