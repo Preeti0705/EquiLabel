@@ -155,11 +155,6 @@ def run_audit(audit_id: str, csv_path: str, model_name: str, protected_attr: str
     try:
         df = pd.read_csv(csv_path)
 
-        # Detect columns with text (object/category) and convert to numeric codes
-        categorical_cols = df.select_dtypes(include=['object', 'category']).columns
-        for col in categorical_cols:
-            df[col] = df[col].astype('category').cat.codes
-
         # Simulate progress steps
         audit_jobs[audit_id]["progress"] = 20
 

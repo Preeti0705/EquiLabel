@@ -31,13 +31,15 @@ class FairnessEngine:
         y_pred = df['prediction']
 
         # Overall accuracy
-        accuracy = accuracy_score(y_true, y_pred)
+        # Compare numeric true vs numeric pred for accuracy
+        y_true_numeric = df[target].astype('category').cat.codes if df[target].dtype == 'object' else df[target]
+        accuracy = accuracy_score(y_true_numeric, df['prediction_numeric'])
 
         # Demographic Parity
-        dp = self._demographic_parity(df, protected_attribute, 'prediction')
+        dp = self._demographic_parity(df, protected_attribute, 'prediction_numeric')
 
         # Equalized Odds (TPR and FPR by group)
-        eo = self._equalized_odds(df, protected_attribute, target, 'prediction')
+        eo = self._equalized_odds(df, protected_attribute, target, 'prediction_numeric')
 
         # Fairness score: composite metric
         # 1.0 = perfect fairness, <0.8 = concerning
@@ -59,13 +61,29 @@ class FairnessEngine:
         df = df.copy()
         feature_cols = [c for c in df.columns if c not in [target, 'patient_id']]
 
-        # Handle categoricals
+        # Handle categoricals in features
         X = pd.get_dummies(df[feature_cols], drop_first=True)
-        y = df[target]
+        
+        # Ensure target is numeric for the model
+        if df[target].dtype == 'object' or df[target].dtype.name == 'category':
+            y = df[target].astype('category').cat.codes
+            self.target_labels = dict(enumerate(df[target].astype('category').cat.categories))
+        else:
+            y = df[target]
+            self.target_labels = {0: 0, 1: 1}
 
         model = RandomForestClassifier(n_estimators=50, random_state=42, max_depth=5)
         model.fit(X, y)
-        df['prediction'] = model.predict(X)
+        
+        # Store numeric predictions for metrics
+        df['prediction_numeric'] = model.predict(X)
+        
+        # Store label predictions for display (optional)
+        if hasattr(self, 'target_labels'):
+            df['prediction'] = df['prediction_numeric'].map(self.target_labels)
+        else:
+            df['prediction'] = df['prediction_numeric']
+            
         return df
 
     def _demographic_parity(self, df: pd.DataFrame, protected: str, prediction: str) -> Dict:
@@ -100,7 +118,11 @@ class FairnessEngine:
             if len(subset) < 2:
                 continue
 
-            cm = confusion_matrix(subset[target], subset[prediction], labels=[0, 1])
+            # Use numeric versions for CM
+            y_t = subset[target].astype('category').cat.codes if subset[target].dtype == 'object' else subset[target]
+            y_p = subset['prediction_numeric']
+            
+            cm = confusion_matrix(y_t, y_p, labels=[0, 1])
             tn, fp, fn, tp = cm.ravel()
 
             tpr = tp / (tp + fn) if (tp + fn) > 0 else 0
@@ -121,12 +143,19 @@ class FairnessEngine:
 
     def _compute_fairness_score(self, dp: Dict, eo: Dict) -> float:
         """Composite score from 0-1."""
+        # Composite score using the worst-performing metric as a bottleneck
         di_score = dp.get("disparate_impact_ratio", 1.0)
-        tpr_penalty = 1 - eo.get("tpr_gap", 0)
-        fpr_penalty = 1 - eo.get("fpr_gap", 0)
-
-        # Weighted average
-        score = (di_score * 0.5) + (tpr_penalty * 0.25) + (fpr_penalty * 0.25)
+        tpr_score = 1 - eo.get("tpr_gap", 0)
+        fpr_score = 1 - eo.get("fpr_gap", 0)
+        
+        # We use a geometric-ish mean or a weighted minimum to ensure 
+        # that a failure in one area strongly affects the overall score.
+        score = (di_score * 0.4) + (tpr_score * 0.3) + (fpr_score * 0.3)
+        
+        # Penalize heavily if DI ratio is below 0.8
+        if di_score < 0.8:
+            score *= 0.8
+            
         return max(0, min(1, score))
 
     def detect_proxies(self, df: pd.DataFrame, protected_attribute: str, threshold: float = 0.65) -> List[Dict]:
@@ -138,7 +167,11 @@ class FairnessEngine:
         protected = df[protected_attribute]
 
         for col in df.columns:
-            if col in [protected_attribute, 'patient_id', 'prediction', 'icu_admitted']:
+            if col in [protected_attribute, 'patient_id', 'prediction', 'prediction_numeric', 'icu_admitted', 'icu_admit']:
+                continue
+            
+            # Skip columns that are clearly identifiers or have too many unique values if string
+            if df[col].nunique() > 100 and df[col].dtype == 'object':
                 continue
 
             corr = self._compute_correlation(df[col], protected)
