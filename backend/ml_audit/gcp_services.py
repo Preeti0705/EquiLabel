@@ -25,7 +25,7 @@ aiplatform.init(project=PROJECT_ID, location=LOCATION)
 
 # Gemini model
 gemini_model = GenerativeModel(
-    "gemini-1.5-flash",
+    "gemini-2.5-flash",
 )
 
 
