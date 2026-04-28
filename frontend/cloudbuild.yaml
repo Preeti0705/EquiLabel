@@ -1,12 +1,15 @@
 steps:
-- name: 'gcr.io/cloud-builders/docker'
-  args: [
-    'build',
-    '--build-arg', 'BACKEND_URL=${_BACKEND_URL}',
-    '-t', 'gcr.io/$PROJECT_ID/equilabel-frontend',
-    '.'
-  ]
+  # Step 1: Build the Flutter Web app using the specific version needed
+  - name: 'ghcr.io/cirruslabs/flutter:3.19.6'
+    args: ['bash', '-c', 'flutter pub get && flutter build web --release --no-tree-shake-icons --dart-define=BACKEND_URL=${_BACKEND_URL}']
+  
+  # Step 2: Build the Nginx container with the pre-built files
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/equilabel-frontend', '-f', 'Dockerfile.deploy', '.']
+
 images:
-- 'gcr.io/$PROJECT_ID/equilabel-frontend'
+  - 'gcr.io/$PROJECT_ID/equilabel-frontend'
+
 options:
   machineType: 'E2_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY
