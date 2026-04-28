@@ -1,7 +1,7 @@
 steps:
-  # Step 1: Build the Flutter Web app
-  - name: 'ghcr.io/cirruslabs/flutter:3.19.6'
-    args: ['bash', '-c', 'cd frontend && flutter pub get && flutter build web --release --no-tree-shake-icons --dart-define=BACKEND_URL="${_BACKEND_URL}"']
+  # Step 1: Build the Flutter Web app (Using 3.22.0 for better package compatibility)
+  - name: 'ghcr.io/cirruslabs/flutter:3.22.0'
+    args: ['bash', '-c', 'cd frontend && flutter pub get && flutter build web --release --no-tree-shake-icons --dart-define=BACKEND_URL="${_BACKEND_URL}" --verbose']
   
   # Step 2: Build the Nginx container
   - name: 'gcr.io/cloud-builders/docker'
