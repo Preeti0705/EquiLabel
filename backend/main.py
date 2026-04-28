@@ -155,11 +155,22 @@ def run_audit(audit_id: str, csv_path: str, model_name: str, protected_attr: str
     try:
         df = pd.read_csv(csv_path)
 
+        # Flexible target detection
+        possible_targets = [target, 'icu_admitted', 'admitted', 'outcome', 'target']
+        actual_target = None
+        for pt in possible_targets:
+            if pt in df.columns:
+                actual_target = pt
+                break
+        
+        if not actual_target:
+            raise ValueError(f"Target column not found. Expected one of: {possible_targets}")
+
         # Simulate progress steps
         audit_jobs[audit_id]["progress"] = 20
 
         # Compute fairness metrics
-        metrics = engine.compute_metrics(df, protected_attribute=protected_attr, target="icu_admitted")
+        metrics = engine.compute_metrics(df, protected_attribute=protected_attr, target=actual_target)
         audit_jobs[audit_id]["progress"] = 60
 
         # Detect proxy variables
@@ -180,12 +191,18 @@ def run_audit(audit_id: str, csv_path: str, model_name: str, protected_attr: str
             "protected_attribute": protected_attr
         }
 
-        # Upload to GCS
-        gcs_uploader.upload_dataset(csv_path, audit_id)
-        gcs_uploader.upload_report(audit_id, report)
+        # Upload to GCS (Optional fallback)
+        try:
+            gcs_uploader.upload_dataset(csv_path, audit_id)
+            gcs_uploader.upload_report(audit_id, report)
+        except Exception as e:
+            print(f"Warning: GCS upload failed: {e}")
 
-        # Log to BigQuery
-        bq_logger.log_audit(audit_id, model_name, report)
+        # Log to BigQuery (Optional fallback)
+        try:
+            bq_logger.log_audit(audit_id, model_name, report)
+        except Exception as e:
+            print(f"Warning: BigQuery logging failed: {e}")
 
         # Mark complete
         audit_jobs[audit_id]["status"] = "complete"
