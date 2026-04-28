@@ -1,0 +1,26 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: equilabel-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/secrets:/app/secrets
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/secrets/key.json
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: equilabel-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped

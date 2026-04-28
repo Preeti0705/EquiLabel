@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pandas
+numpy
+pydantic
+google-cloud-bigquery
+google-cloud-storage
+google-cloud-aiplatform
+scikit-learn
+xgboost
