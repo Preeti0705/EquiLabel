@@ -3,7 +3,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  final String baseUrl = 'http://localhost:8000/api/v1';
+  final String baseUrl = String.fromEnvironment(
+    'BACKEND_URL',
+    defaultValue: 'http://localhost:8000/api/v1',
+  );
 
   Future<String> getGeminiExplanation(String auditId, String question) async {
   final response = await http.post(

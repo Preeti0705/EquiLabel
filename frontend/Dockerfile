@@ -11,7 +11,8 @@ RUN flutter pub upgrade
 
 # Copy source and build
 COPY . .
-RUN flutter build web --release --no-tree-shake-icons
+ARG BACKEND_URL
+RUN flutter build web --release --no-tree-shake-icons --dart-define=BACKEND_URL=$BACKEND_URL
 
 # Stage 2: Serve with Nginx
 FROM nginx:alpine
