@@ -12,6 +12,12 @@ frontend/.dart_tool/
 frontend/.flutter-plugins
 frontend/.packages
 
+# Flutter native platform folders (Docker builds web only)
+frontend/android/
+frontend/linux/
+frontend/macos/
+frontend/windows/
+
 # GCP / Secrets
 *.key.json
 *.json
