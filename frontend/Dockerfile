@@ -5,9 +5,9 @@ FROM ghcr.io/cirruslabs/flutter:3.19.6 AS build
 
 WORKDIR /app
 
-# Copy pubspec first for layer caching; use pub upgrade to resolve compatible versions
-COPY pubspec.yaml ./
-RUN flutter pub upgrade
+# Copy pubspec and lock for consistent builds
+COPY pubspec.yaml pubspec.lock ./
+RUN flutter pub get
 
 # Copy source and build
 COPY . .

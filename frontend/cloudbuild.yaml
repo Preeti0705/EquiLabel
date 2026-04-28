@@ -8,3 +8,5 @@ steps:
   ]
 images:
 - 'gcr.io/$PROJECT_ID/equilabel-frontend'
+options:
+  machineType: 'E2_HIGHCPU_8'
