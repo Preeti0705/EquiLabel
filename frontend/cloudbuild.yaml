@@ -1,7 +1,7 @@
 steps:
   # Step 1: Build the Flutter Web app using the specific version needed
   - name: 'ghcr.io/cirruslabs/flutter:3.19.6'
-    args: ['bash', '-c', 'flutter pub get && flutter build web --release --no-tree-shake-icons --dart-define=BACKEND_URL=${_BACKEND_URL}']
+    args: ['bash', '-c', 'flutter doctor && flutter clean && flutter pub get && flutter build web --release --no-tree-shake-icons --dart-define=BACKEND_URL="${_BACKEND_URL}" --verbose']
   
   # Step 2: Build the Nginx container with the pre-built files
   - name: 'gcr.io/cloud-builders/docker'
