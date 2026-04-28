@@ -156,7 +156,7 @@ def run_audit(audit_id: str, csv_path: str, model_name: str, protected_attr: str
         df = pd.read_csv(csv_path)
 
         # Flexible target detection
-        possible_targets = [target, 'icu_admitted', 'admitted', 'outcome', 'target']
+        possible_targets = ['icu_admitted', 'admitted', 'outcome', 'target', 'label']
         actual_target = None
         for pt in possible_targets:
             if pt in df.columns:
