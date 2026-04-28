@@ -195,16 +195,24 @@ class FairnessEngine:
 
     def _compute_correlation(self, x: pd.Series, y: pd.Series) -> float:
         """Compute appropriate correlation based on data types."""
-        if x.dtype == 'object' and y.dtype == 'object':
-            # Cramér's V (simplified)
+        x_is_cat = x.dtype == 'object' or x.dtype.name == 'category'
+        y_is_cat = y.dtype == 'object' or y.dtype.name == 'category'
+
+        if x_is_cat and y_is_cat:
+            # Cramér's V (categorical-categorical)
             return self._cramers_v(x, y)
-        elif x.dtype == 'object':
-            # Point-biserial approximation
+        elif x_is_cat:
+            # Correlation ratio (categorical x numeric)
             return self._eta_squared(x, y)
-        elif y.dtype == 'object':
+        elif y_is_cat:
+            # Correlation ratio (numeric x categorical)
             return self._eta_squared(y, x)
         else:
-            return x.corr(y)
+            # Pearson (numeric-numeric)
+            try:
+                return x.corr(y)
+            except:
+                return 0.0
 
     def _cramers_v(self, x: pd.Series, y: pd.Series) -> float:
         """Simplified Cramér's V for categorical association."""
