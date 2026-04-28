@@ -26,6 +26,13 @@ class FairnessEngine:
         # In production, this would come from Vertex AI endpoint
         if 'prediction' not in df.columns:
             df = self._add_predictions(df, target)
+        
+        # Ensure numeric version exists for calculations if not already there
+        if 'prediction_numeric' not in df.columns:
+            if df['prediction'].dtype == 'object' or df['prediction'].dtype.name == 'category':
+                df['prediction_numeric'] = df['prediction'].astype('category').cat.codes
+            else:
+                df['prediction_numeric'] = df['prediction']
 
         y_true = df[target]
         y_pred = df['prediction']
