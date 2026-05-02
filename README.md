@@ -18,8 +18,4 @@ An AI Fairness Audit Platform that provides an "Algorithmic Nutrition Label" for
    - Access the **Frontend Web App** at: [http://localhost](http://localhost)
    - Access the **Backend API Docs** at: [http://localhost:8000/docs](http://localhost:8000/docs)
 
-## Note on Mock Components
-For this MVP, the following are mocked:
-- The `gemini_agent` returns pre-defined template text via Server-Sent Events (SSE).
-- The `bigquery_client` just logs to the console instead of writing to real GCP BigQuery.
-- Computations use mocked static results instead of deeply processing the actual uploaded CSV, though the architecture is ready to be wired directly to `pandas` DataFrames.
+
